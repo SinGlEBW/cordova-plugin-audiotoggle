@@ -1,0 +1,46 @@
+{
+	"_from": "git+https://github.com/qvadis/cordova-plugin-audiotoggle.git",
+	"_id": "cordova-plugin-audiotoggle@1.2.4",
+	"_inBundle": false,
+	"_integrity": "",
+	"_location": "/cordova-plugin-audiotoggle",
+	"_phantomChildren": {},
+	"_requested": {
+	  "type": "git",
+	  "raw": "https://github.com/qvadis/cordova-plugin-audiotoggle.git",
+	  "rawSpec": "https://github.com/qvadis/cordova-plugin-audiotoggle",
+	  "saveSpec": "git+https://github.com/qvadis/cordova-plugin-audiotoggle.git",
+	  "fetchSpec": "https://github.com/qvadis/cordova-plugin-audiotoggle.git",
+	  "gitCommittish": null
+	},
+	"_requiredBy": [
+	  "#USER",
+	  "/"
+	],
+	"_resolved": "git+https://github.com/qvadis/cordova-plugin-audiotoggle.git#8298ff9497a05937df4663c176f5c59217ef2a57",
+	"_spec": "https://github.com/qvadis/cordova-plugin-audiotoggle",
+	"_where": "/Users/bantona/Documents/Codigo/qvadis-app-ionic",
+	"author": {
+	  "name": "Alex Beimler"
+	},
+	"bugs": {
+	  "url": "https://github.com/neohelden/cordova-plugin-audiotoggle/issues"
+	},
+	"bundleDependencies": false,
+	"cordova_name": "cordova-plugin-audiotoggle",
+	"deprecated": false,
+	"description": "cordova-plugin-audiotoggle",
+	"homepage": "https://github.com/neohelden/cordova-plugin-audiotoggle#readme",
+	"license": "MIT",
+	"name": "cordova-plugin-audiotoggle",
+	"platforms": [
+	  "android",
+	  "ios"
+	],
+	"repository": {
+	  "type": "git",
+	  "url": "git+https://github.com/qvadis/cordova-plugin-audiotoggle.git"
+	},
+	"version": "1.2.4"
+  }
+  
