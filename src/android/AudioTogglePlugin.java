@@ -19,6 +19,15 @@ import org.json.JSONObject;
 import android.util.Log;
 import android.os.Build;
 
+/*------------------------------------------ */
+import org.apache.cordova.PluginResult;
+import android.content.IntentFilter;
+import android.widget.Toast;
+import android.content.Intent;
+import android.media.AudioDeviceInfo;
+import android.content.BroadcastReceiver;
+/*------------------------------------------ */
+
 public class AudioTogglePlugin extends CordovaPlugin {
   public static final String ACTION_SET_AUDIO_MODE = "setAudioMode";
   public static final String ACTION_SET_BLUETOOTH_ON = "setBluetoothScoOn";
@@ -31,9 +40,13 @@ public class AudioTogglePlugin extends CordovaPlugin {
   public static final String ACTION_HAS_EARPIECE = "hasBuiltInEarpiece";
   public static final String ACTION_HAS_SPEAKER = "hasBuiltInSpeaker";
   public static final String ACTION_SET_DEVICE = "setAudioDevice";
+  public static final String ACTION_SET_REGISTER_LISTENER = "registerListener";
+  private CallbackContext callbackContext = null;
+  private AudioTogglePlugin _this = this;
 
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+
     if (action.equals(ACTION_SET_AUDIO_MODE)) {
       if (!setAudioMode(args.getString(0))) {
         callbackContext.error("Invalid audio mode");
@@ -70,6 +83,10 @@ public class AudioTogglePlugin extends CordovaPlugin {
       return true;
     } else if (action.equals(ACTION_SET_DEVICE)) {
       setAudioDevice(args.getInt(0));
+      return true;
+    } else if (action.equals(ACTION_SET_REGISTER_LISTENER)) {
+      this.callbackContext = callbackContext;
+      registerListener();
       return true;
     }
 
@@ -201,103 +218,110 @@ public class AudioTogglePlugin extends CordovaPlugin {
 
   public void setAudioDevice(int type) {
     final Context context = webView.getContext();
-    final AudioManager audioManager = (AudioManager) context.getSystemService(AudioManager.class);
-    // audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
 
-    // audioManager.setSpeakerphoneOn(on);
-    // Get an AudioManager instance
-    ArrayList<Integer> targetTypes = new ArrayList<>();
-    // add types according to needs, may be few in order of importance
-    /**
-     * TYPE_BLE_HEADSET: 26
-     * TYPE_BLE_SPEAKER: 27
-     * TYPE_BLUETOOTH_SCO: 7
-     * TYPE_BUILTIN_EARPIECE: 1
-     * TYPE_BUILTIN_SPEAKER: 2
-     * TYPE_USB_HEADSET: 22
-     * TYPE_WIRED_HEADPHONES: 4
-     * TYPE_WIRED_HEADSET: 3
-     * TYPE_TELEPHONY: 18
-     */
-    targetTypes.add(type);
+    if (Build.VERSION.SDK_INT >= 31) {
 
-    Boolean result = null;
-    List<AudioDeviceInfo> devices = audioManager.getAvailableCommunicationDevices();
-    outer: for (Integer targetType : targetTypes) {
-      for (AudioDeviceInfo device : devices) {
-        Log.i("AUDIO_MANAGER", "getType " + type);
-        if (device.getType() == targetType) {
-          result = audioManager.setCommunicationDevice(device);
-          Log.i("AUDIO_MANAGER", "setCommunicationDevice type:" + targetType + " result:" + result);
-          if (result)
-            break outer;
+      final AudioManager audioManager = (AudioManager) context.getSystemService(AudioManager.class);
+      // audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+
+      // audioManager.setSpeakerphoneOn(on);
+      // Get an AudioManager instance
+      ArrayList<Integer> targetTypes = new ArrayList<>();
+      // add types according to needs, may be few in order of importance
+      /**
+       * TYPE_BLE_HEADSET: 26
+       * TYPE_BLE_SPEAKER: 27
+       * TYPE_BLUETOOTH_SCO: 7
+       * TYPE_BUILTIN_EARPIECE: 1
+       * TYPE_BUILTIN_SPEAKER: 2
+       * TYPE_USB_HEADSET: 22
+       * TYPE_WIRED_HEADPHONES: 4
+       * TYPE_WIRED_HEADSET: 3
+       * TYPE_TELEPHONY: 18
+       */
+      targetTypes.add(type);
+
+      Boolean result = null;
+      List<AudioDeviceInfo> devices = audioManager.getAvailableCommunicationDevices();
+      outer: for (Integer targetType : targetTypes) {
+        for (AudioDeviceInfo device : devices) {
+          Log.i("AUDIO_MANAGER", "getType " + type);
+          if (device.getType() == targetType) {
+            result = audioManager.setCommunicationDevice(device);
+            Log.i("AUDIO_MANAGER", "setCommunicationDevice type:" + targetType + " result:" + result);
+            if (result)
+              break outer;
+          }
         }
       }
-    }
 
-    if (result == null) {
-      Log.i("AUDIO_MANAGER", "setCommunicationDevice targetType NOT FOUND!!");
+      if (result == null) {
+        Log.i("AUDIO_MANAGER", "setCommunicationDevice targetType NOT FOUND!!");
+      }
     }
   }
 
   public void setAudioTypeDevice(String type) {
     final Context context = webView.getContext();
-    final AudioManager audioManager = (AudioManager) context.getSystemService(AudioManager.class);
-    // audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+    if (Build.VERSION.SDK_INT >= 31) {
 
-    // audioManager.setSpeakerphoneOn(on);
-    // Get an AudioManager instance
-    ArrayList<Integer> targetTypes = new ArrayList<>();
-    // add types according to needs, may be few in order of importance
-    /**
-     * TYPE_BLE_HEADSET: 26
-     * TYPE_BLE_SPEAKER: 27
-     * TYPE_BLUETOOTH_SCO: 7
-     * TYPE_BUILTIN_EARPIECE: 1
-     * TYPE_BUILTIN_SPEAKER: 2
-     * TYPE_USB_HEADSET: 22
-     * TYPE_WIRED_HEADPHONES: 4
-     * TYPE_WIRED_HEADSET: 3
-     * TYPE_TELEPHONY: 18
-     */
-    switch (type) {
-      case "bluetooth":
-        audioManager.setBluetoothScoOn(true);
-        audioManager.startBluetoothSco();
-        targetTypes.add(AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
-        targetTypes.add(AudioDeviceInfo.TYPE_BLE_HEADSET);
-        targetTypes.add(AudioDeviceInfo.TYPE_BLE_SPEAKER);
-        break;
-      case "headphones":
-        targetTypes.add(AudioDeviceInfo.TYPE_WIRED_HEADPHONES);
-        targetTypes.add(AudioDeviceInfo.TYPE_WIRED_HEADSET);
-        targetTypes.add(AudioDeviceInfo.TYPE_USB_HEADSET);
-        break;
-      case "speaker":
-        targetTypes.add(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER);
-      case "earpiece":
-        targetTypes.add(AudioDeviceInfo.TYPE_BUILTIN_EARPIECE);
-        break;
-      default:
-        break;
-    }
+      final AudioManager audioManager = (AudioManager) context.getSystemService(AudioManager.class);
+      // audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
 
-    Boolean result = null;
-    List<AudioDeviceInfo> devices = audioManager.getAvailableCommunicationDevices();
-    outer: for (Integer targetType : targetTypes) {
-      for (AudioDeviceInfo device : devices) {
-        Log.i("AUDIO_MANAGER", "getType " + type);
-        if (device.getType() == targetType) {
-          result = audioManager.setCommunicationDevice(device);
-          Log.i("AUDIO_MANAGER", "setCommunicationDevice type:" + targetType + " result:" + result);
-          if (result)
-            break outer;
+      // audioManager.setSpeakerphoneOn(on);
+      // Get an AudioManager instance
+      ArrayList<Integer> targetTypes = new ArrayList<>();
+      // add types according to needs, may be few in order of importance
+      /**
+       * TYPE_BLE_HEADSET: 26
+       * TYPE_BLE_SPEAKER: 27
+       * TYPE_BLUETOOTH_SCO: 7
+       * TYPE_BUILTIN_EARPIECE: 1
+       * TYPE_BUILTIN_SPEAKER: 2
+       * TYPE_USB_HEADSET: 22
+       * TYPE_WIRED_HEADPHONES: 4
+       * TYPE_WIRED_HEADSET: 3
+       * TYPE_TELEPHONY: 18
+       */
+      switch (type) {
+        case "bluetooth":
+          audioManager.setBluetoothScoOn(true);
+          audioManager.startBluetoothSco();
+          targetTypes.add(AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
+          targetTypes.add(AudioDeviceInfo.TYPE_BLE_HEADSET);
+          targetTypes.add(AudioDeviceInfo.TYPE_BLE_SPEAKER);
+          break;
+        case "headphones":
+          targetTypes.add(AudioDeviceInfo.TYPE_WIRED_HEADPHONES);
+          targetTypes.add(AudioDeviceInfo.TYPE_WIRED_HEADSET);
+          targetTypes.add(AudioDeviceInfo.TYPE_USB_HEADSET);
+          break;
+        case "speaker":
+          targetTypes.add(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER);
+        case "earpiece":
+          targetTypes.add(AudioDeviceInfo.TYPE_BUILTIN_EARPIECE);
+          break;
+        default:
+          break;
+      }
+
+      Boolean result = null;
+      List<AudioDeviceInfo> devices = audioManager.getAvailableCommunicationDevices();
+      outer: for (Integer targetType : targetTypes) {
+        for (AudioDeviceInfo device : devices) {
+          Log.i("AUDIO_MANAGER", "getType " + type);
+          if (device.getType() == targetType) {
+            result = audioManager.setCommunicationDevice(device);
+            Log.i("AUDIO_MANAGER", "setCommunicationDevice type:" + targetType + " result:" + result);
+            if (result)
+              break outer;
+          }
         }
       }
-    }
 
-    if (result == null) {
-      Log.i("AUDIO_MANAGER", "setCommunicationDevice targetType NOT FOUND!!");
+      if (result == null) {
+        Log.i("AUDIO_MANAGER", "setCommunicationDevice targetType NOT FOUND!!");
+      }
     }
   }
 
@@ -373,7 +397,7 @@ public class AudioTogglePlugin extends CordovaPlugin {
         audioManager.stopBluetoothSco();
         audioManager.setBluetoothScoOn(false);
         audioManager.setSpeakerphoneOn(false);
-        
+
         return true;
       }
     }
@@ -385,6 +409,7 @@ public class AudioTogglePlugin extends CordovaPlugin {
     final Context context = webView.getContext();
     final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
     JSONArray retdevs = new JSONArray();
+    String mode = "";
 
     if (Build.VERSION.SDK_INT >= 31) {
 
@@ -392,13 +417,34 @@ public class AudioTogglePlugin extends CordovaPlugin {
         List<AudioDeviceInfo> devices = audioManager.getAvailableCommunicationDevices();
         // AudioDeviceInfo[] devices =
         // audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
-
+        
         for (AudioDeviceInfo dev : devices) {
           // if (dev.isSink()) {
           // if (dev.getType() != AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
           // && dev.getType() != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
-          retdevs.put(new JSONObject().put("id", dev.getId()).put("type", dev.getType()).put("name",
-              dev.getProductName().toString()));
+         
+
+          if (dev.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
+            mode = (String)"speaker";
+          }
+          if (dev.getType() == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE) {
+            mode = (String)"earpiece";
+          }
+          if (dev.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
+            mode = (String)"bluetooth";
+          }
+          if (dev.getType() == AudioDeviceInfo.TYPE_WIRED_HEADPHONES) {
+            mode = (String)"headphones";
+          }
+         
+
+          retdevs.put(
+            new JSONObject()
+            .put("id", dev.getId())
+            .put("type", dev.getType())
+            .put("name",dev.getProductName().toString())
+            .put("mode", mode.toString())
+          );
           // }
           // }
         }
@@ -408,26 +454,45 @@ public class AudioTogglePlugin extends CordovaPlugin {
         // lets hope json-object keys are not null and not duplicated :)
       }
 
-    }else{
-      
+    } else {
+
       try {
         AudioDeviceInfo[] devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
-
+        
         for (AudioDeviceInfo dev : devices) {
+
+          if (dev.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
+            mode = "speaker";
+          }
+          if (dev.getType() == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE) {
+            mode = "earpiece";
+          }
+          if (dev.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
+            mode = "bluetooth";
+          }
+          if (dev.getType() == AudioDeviceInfo.TYPE_WIRED_HEADPHONES) {
+            mode = "headphones";
+          }
+         
+
           if (dev.isSink()) {
-            if (dev.getType() != AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
-                && dev.getType() != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
-              retdevs.put(new JSONObject().put("id", dev.getId()).put("type", dev.getType()).put("name",
-                  dev.getProductName().toString()));
+            if (dev.getType() != AudioDeviceInfo.TYPE_BUILTIN_EARPIECE && dev.getType() != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
+              retdevs.put(
+                new JSONObject()
+                .put("id", dev.getId())
+                .put("type", dev.getType())
+                .put("name",dev.getProductName().toString())
+                .put("mode", mode)
+              );
             }
           }
         }
-  
+
         return new JSONObject().put("devices", retdevs);
       } catch (JSONException e) {
         // lets hope json-object keys are not null and not duplicated :)
       }
-    
+
     }
 
     return new JSONObject();
@@ -485,4 +550,65 @@ public class AudioTogglePlugin extends CordovaPlugin {
 
     return audioManager.isSpeakerphoneOn();
   }
+
+  public void registerListener() {
+    final Context context = webView.getContext();
+    final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+
+    IntentFilter filter = new IntentFilter();
+    filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+    filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
+    filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+    filter.addAction(Intent.ACTION_HEADSET_PLUG);
+    context.registerReceiver(BTReceiver, filter);
+
+  }
+
+  private final BroadcastReceiver BTReceiver = new BroadcastReceiver() {
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      String action = intent.getAction();
+
+      if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+        Toast.makeText(context, "Bluetooth connected", Toast.LENGTH_SHORT).show();
+      } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+        Toast.makeText(context, "Bluetooth disconnected", Toast.LENGTH_SHORT).show();
+      } else if (Intent.ACTION_HEADSET_PLUG.equals(action)) {
+        int state = intent.getIntExtra("state", -1);
+        switch (state) {
+          case 0:
+            Toast.makeText(context, "Wired device disconnected", Toast.LENGTH_SHORT).show();
+            break;
+          case 1:
+            Toast.makeText(context, "Wired device connected", Toast.LENGTH_SHORT).show();
+            break;
+          default:
+            break;
+        }
+      }
+      // fireEvent("devicechange");
+     
+      _this.sendResult(getOutputDevices(), true);
+    }
+  };
+
+  // public void fireEvent(String eventName) {
+
+  // final String js = "javascript:(function(){" +
+  // "var event = new CustomEvent('" + eventName + "');" +
+  // "setTimeout(() => { navigator.mediaDevices.dispatchEvent(event); }, 500);" +
+  // "})()";
+
+  // this.activity.runOnUiThread(() -> webView.loadUrl(js));
+  // }
+
+  private void sendResult(JSONObject info, boolean keepCallback) {
+    if (this.callbackContext != null) {
+      PluginResult result = new PluginResult(PluginResult.Status.OK, info);
+      result.setKeepCallback(keepCallback);
+      this.callbackContext.sendPluginResult(result);
+    }
+  }
+
 }
