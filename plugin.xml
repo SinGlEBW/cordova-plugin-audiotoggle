@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin 
    xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android"
-   id="cordova-plugin-audiotoggle" version="1.2.6">
+   id="cordova-plugin-audiotoggle" version="1.2.7">
 
   <name>AudioToggle</name>
   <description>Toggle between speaker and earpiece when playing audio</description>
@@ -34,7 +34,6 @@
     <config-file target="res/xml/config.xml" parent="/*">
       <feature name="AudioTogglePlugin">
         <param name="android-package" value="ru.cordova.android.audiotoggle.AudioTogglePlugin" />
-        <param name="onload" value="true" />
       </feature>
     </config-file>
     
