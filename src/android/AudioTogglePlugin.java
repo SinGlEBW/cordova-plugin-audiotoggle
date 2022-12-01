@@ -1,4 +1,4 @@
-package com.dooble.audiotoggle;
+package ru.cordova.android.audiotoggle;
 
 import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.BluetoothAdapter;
