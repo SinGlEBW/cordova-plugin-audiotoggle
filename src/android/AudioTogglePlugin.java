@@ -13,6 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
+
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaWebView;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,6 +30,11 @@ import android.widget.Toast;
 import android.content.Intent;
 import android.media.AudioDeviceInfo;
 import android.content.BroadcastReceiver;
+import androidx.core.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
+import android.content.pm.PackageManager;
+import android.Manifest;
+import android.app.Activity;
 /*------------------------------------------ */
 
 public class AudioTogglePlugin extends CordovaPlugin {
@@ -42,11 +51,13 @@ public class AudioTogglePlugin extends CordovaPlugin {
   public static final String ACTION_SET_DEVICE = "setAudioDevice";
   public static final String ACTION_SET_REGISTER_LISTENER = "registerListener";
   private CallbackContext callbackContext = null;
+  private Context contextApplication;
   private AudioTogglePlugin _this = this;
+
 
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-
+    this.contextApplication = cordova.getActivity().getApplicationContext();
     if (action.equals(ACTION_SET_AUDIO_MODE)) {
       if (!setAudioMode(args.getString(0))) {
         callbackContext.error("Invalid audio mode");
@@ -409,44 +420,25 @@ public class AudioTogglePlugin extends CordovaPlugin {
     final Context context = webView.getContext();
     final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
     JSONArray retdevs = new JSONArray();
-    String mode = "";
+    
 
     if (Build.VERSION.SDK_INT >= 31) {
 
       try {
         List<AudioDeviceInfo> devices = audioManager.getAvailableCommunicationDevices();
-        // AudioDeviceInfo[] devices =
-        // audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+     
         
         for (AudioDeviceInfo dev : devices) {
-          // if (dev.isSink()) {
-          // if (dev.getType() != AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
-          // && dev.getType() != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
-         
 
-          if (dev.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
-            mode = (String)"speaker";
-          }
-          if (dev.getType() == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE) {
-            mode = (String)"earpiece";
-          }
-          if (dev.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
-            mode = (String)"bluetooth";
-          }
-          if (dev.getType() == AudioDeviceInfo.TYPE_WIRED_HEADPHONES) {
-            mode = (String)"headphones";
-          }
-         
-
+       
           retdevs.put(
             new JSONObject()
             .put("id", dev.getId())
             .put("type", dev.getType())
             .put("name",dev.getProductName().toString())
-            .put("mode", mode.toString())
+            .put("mode", this.getCustomMode(dev))
           );
-          // }
-          // }
+          
         }
 
         return new JSONObject().put("devices", retdevs);
@@ -459,21 +451,11 @@ public class AudioTogglePlugin extends CordovaPlugin {
       try {
         AudioDeviceInfo[] devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
         
-        for (AudioDeviceInfo dev : devices) {
 
-          if (dev.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
-            mode = "speaker";
-          }
-          if (dev.getType() == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE) {
-            mode = "earpiece";
-          }
-          if (dev.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
-            mode = "bluetooth";
-          }
-          if (dev.getType() == AudioDeviceInfo.TYPE_WIRED_HEADPHONES) {
-            mode = "headphones";
-          }
-         
+        for (AudioDeviceInfo dev : devices) {
+    
+           
+      
 
           if (dev.isSink()) {
             if (dev.getType() != AudioDeviceInfo.TYPE_BUILTIN_EARPIECE && dev.getType() != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
@@ -482,7 +464,7 @@ public class AudioTogglePlugin extends CordovaPlugin {
                 .put("id", dev.getId())
                 .put("type", dev.getType())
                 .put("name",dev.getProductName().toString())
-                .put("mode", mode)
+                .put("mode", this.getCustomMode(dev))
               );
             }
           }
@@ -500,7 +482,13 @@ public class AudioTogglePlugin extends CordovaPlugin {
 
   public String getAudioMode() {
     final Context context = webView.getContext();
-    final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+    AudioManager audioManager;
+
+    if (Build.VERSION.SDK_INT >= 31) {
+      audioManager = (AudioManager) context.getSystemService(AudioManager.class);
+    }else{
+      audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+    }
 
     int mode = audioManager.getMode();
     boolean isBluetoothScoOn = audioManager.isBluetoothScoOn();
@@ -521,6 +509,23 @@ public class AudioTogglePlugin extends CordovaPlugin {
     return "normal";
   }
 
+  private String getCustomMode(AudioDeviceInfo dev) {
+    String mode = "";
+    if (dev.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
+      mode = "speaker";
+    }
+    if (dev.getType() == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE) {
+      mode = "earpiece";
+    }
+    if (dev.getType() == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
+      mode = "bluetooth";
+    }
+    if (dev.getType() == AudioDeviceInfo.TYPE_WIRED_HEADPHONES) {
+      mode = "headphones";
+    }
+    return mode;
+  
+  }
   public String getAudioSystem() {
     final Context context = webView.getContext();
     final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
@@ -552,15 +557,29 @@ public class AudioTogglePlugin extends CordovaPlugin {
   }
 
   public void registerListener() {
-    final Context context = webView.getContext();
-    final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+   
+    Activity activity = this.cordova.getActivity();
+    // IntentFilter filter = new IntentFilter();
+    // filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+    // filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
+    // filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+    // filter.addAction(Intent.ACTION_HEADSET_PLUG);
+    // this.contextApplication.registerReceiver(BTReceiver, filter);
 
-    IntentFilter filter = new IntentFilter();
-    filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
-    filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
-    filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-    filter.addAction(Intent.ACTION_HEADSET_PLUG);
-    context.registerReceiver(BTReceiver, filter);
+    
+    this.contextApplication.registerReceiver(BTReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+    this.contextApplication.registerReceiver(BTReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED));
+    this.contextApplication.registerReceiver(BTReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED));
+    this.contextApplication.registerReceiver(BTReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED));
+    this.contextApplication.registerReceiver(BTReceiver, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
+
+    if (ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 2);
+            return;
+        }
+    }
+
 
   }
 
@@ -570,11 +589,22 @@ public class AudioTogglePlugin extends CordovaPlugin {
     public void onReceive(Context context, Intent intent) {
       String action = intent.getAction();
 
+      if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+        // Discovery has found a device. Get the BluetoothDevice
+        // object and its info from the Intent.
+        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+        String deviceName = device.getName();
+        String deviceHardwareAddress = device.getAddress(); // MAC address
+        Log.i("Bluetooth", "got device " + deviceName);
+      }
+
       if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
         Toast.makeText(context, "Bluetooth connected", Toast.LENGTH_SHORT).show();
-      } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+      } else 
+      if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
         Toast.makeText(context, "Bluetooth disconnected", Toast.LENGTH_SHORT).show();
-      } else if (Intent.ACTION_HEADSET_PLUG.equals(action)) {
+      } else 
+      if (Intent.ACTION_HEADSET_PLUG.equals(action)) {
         int state = intent.getIntExtra("state", -1);
         switch (state) {
           case 0:
@@ -587,21 +617,13 @@ public class AudioTogglePlugin extends CordovaPlugin {
             break;
         }
       }
-      // fireEvent("devicechange");
-     
-      _this.sendResult(getOutputDevices(), true);
+   
+      setTimeout(() -> _this.sendResult(getOutputDevices(), true), 500);
+      
     }
   };
 
-  // public void fireEvent(String eventName) {
 
-  // final String js = "javascript:(function(){" +
-  // "var event = new CustomEvent('" + eventName + "');" +
-  // "setTimeout(() => { navigator.mediaDevices.dispatchEvent(event); }, 500);" +
-  // "})()";
-
-  // this.activity.runOnUiThread(() -> webView.loadUrl(js));
-  // }
 
   private void sendResult(JSONObject info, boolean keepCallback) {
     if (this.callbackContext != null) {
@@ -610,5 +632,16 @@ public class AudioTogglePlugin extends CordovaPlugin {
       this.callbackContext.sendPluginResult(result);
     }
   }
+  public static void setTimeout(Runnable runnable, int delay){
+    new Thread(() -> {
+        try {
+            Thread.sleep(delay);
+            runnable.run();
+        }
+        catch (Exception e){
+            System.err.println(e);
+        }
+    }).start();
+}
 
 }
