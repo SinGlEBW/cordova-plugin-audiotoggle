@@ -63,3 +63,7 @@ To set the current audio mode, use the `setAudioMode` method:
     AudioToggle.setAudioMode(AudioToggle.EARPIECE);
 
 
+    AudioToggle.on('devicechange', ({id, type, name, mode}) => {
+			//mode - "speaker" | "earpiece" | "bluetooth" | "headphones"
+		});
+

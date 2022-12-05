@@ -1,33 +1,36 @@
 {
-  "name": "cordova-plugin-audiotoggle",
-  "version": "1.3.0",
-  "description": "Toggle between speaker and earpiece when playing audio",
-  "cordova": {
-    "id": "cordova-plugin-audiotoggle",
-    "platforms": [
-      "ios",
-      "android"
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SinGlEBW/cordova-plugin-audiotoggle.git"
-  },
-  "keywords": [
-    "ecosystem:cordova",
-    "cordova-ios",
-    "cordova-android"
-  ],
-  "engines": [
-    {
-      "name": "cordova",
-      "version": ">=3.0.0"
-    }
-  ],
-  "author": "SinGlEBW",
-  "license": "Apache",
-  "bugs": {
-    "url": "https://github.com/SinGlEBW/cordova-plugin-audiotoggle/issues"
-  },
-  "homepage": "https://github.com/SinGlEBW/cordova-plugin-audiotoggle#readme"
+ "name": "cordova-plugin-audiotoggle",
+ "version": "1.3.1",
+ "description": "Toggle between speaker and earpiece when playing audio",
+ "cordova": {
+  "id": "cordova-plugin-audiotoggle",
+  "platforms": [
+   "ios",
+   "android"
+  ]
+ },
+ "scripts": {
+  "push": "git add . && git ct -m update && git push && npm publish"
+ },
+ "repository": {
+  "type": "git",
+  "url": "git+https://github.com/SinGlEBW/cordova-plugin-audiotoggle.git"
+ },
+ "keywords": [
+  "ecosystem:cordova",
+  "cordova-ios",
+  "cordova-android"
+ ],
+ "engines": [
+  {
+   "name": "cordova",
+   "version": ">=3.0.0"
+  }
+ ],
+ "author": "SinGlEBW",
+ "license": "Apache",
+ "bugs": {
+  "url": "https://github.com/SinGlEBW/cordova-plugin-audiotoggle/issues"
+ },
+ "homepage": "https://github.com/SinGlEBW/cordova-plugin-audiotoggle#readme"
 }
