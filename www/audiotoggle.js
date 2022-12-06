@@ -1,6 +1,5 @@
 	var exec = require('cordova/exec');
 	let classInJava = 'AudioTogglePlugin';
-	let isEvent = false;
 
 	exports.BLUETOOTH = 'bluetooth';
 	exports.INCALL = 'incall';
@@ -8,9 +7,11 @@
 	exports.EARPIECE = 'earpiece';
 	exports.NORMAL = 'normal';
 	exports.RINGTONE = 'ringtone';
+
 	exports.setAudioMode = function (mode) {
 		exec(null, null, classInJava, 'setAudioMode', [mode]);
 	};
+
 	exports.setAudioDevice = function (type) {
 		exec(null, null, classInJava, 'setAudioDevice', [type]);
 	};
@@ -36,15 +37,15 @@
 	};
 	
 	exports.on = function (eventName, callback) {
-
 		// navigator.mediaDevices.addEventListener('devicechange', navigator.mediaDevices.ondevicechange);
-		
-		if(eventName === 'devicechange' && !isEvent){
-			isEvent = true;
+		if(eventName === 'devicechange'){
 			exec(callback, null, classInJava, "registerListener", ['audioOutputsAvailable']);//argument для ios
 		}
+	};
 
-
+	exports.off = function () {
+		// navigator.mediaDevices.addEventListener('devicechange', navigator.mediaDevices.ondevicechange);
+		exec(null, null, classInJava, "unregisterListener", []);
 	};
 	
 	exports.getAudioMode = function (callback) {

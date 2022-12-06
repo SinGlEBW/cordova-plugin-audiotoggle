@@ -51,6 +51,8 @@ public class AudioTogglePlugin extends CordovaPlugin {
   public static final String ACTION_HAS_SPEAKER = "hasBuiltInSpeaker";
   public static final String ACTION_SET_DEVICE = "setAudioDevice";
   public static final String ACTION_SET_REGISTER_LISTENER = "registerListener";
+  public static final String ACTION_SET_UNREGISTER_LISTENER = "unregisterListener";
+
   private CallbackContext callbackContext = null;
   private Context contextApplication;
   private AudioTogglePlugin _this = this;
@@ -99,6 +101,9 @@ public class AudioTogglePlugin extends CordovaPlugin {
     } else if (action.equals(ACTION_SET_REGISTER_LISTENER)) {
       this.callbackContext = callbackContext;
       registerListener();
+      return true;
+    } else if (action.equals(ACTION_SET_UNREGISTER_LISTENER)) {
+      unregisterListener();
       return true;
     }
 
@@ -423,6 +428,7 @@ public class AudioTogglePlugin extends CordovaPlugin {
 
     if (Build.MODEL.contains("Nokia 5.4")) {
     }
+    ;
 
     if (Build.VERSION.SDK_INT >= 31) {
       try {
@@ -521,7 +527,7 @@ public class AudioTogglePlugin extends CordovaPlugin {
     String name = dev.getProductName().toString();
     String mode = this.getCustomMode(type);
 
-    return (new JSONObject().put("id", id).put("type", type).put("name", name).put("mode", mode));
+    return (new JSONObject().put("deviceId", id).put("type", type).put("name", name).put("mode", mode));
   }
 
   public String getAudioSystem() {
@@ -584,6 +590,13 @@ public class AudioTogglePlugin extends CordovaPlugin {
           setTimeout(() -> _this.sendResult(getOutputDevices(), true), delayTimeout);
         }
       }
+    }
+  }
+
+  public void unregisterListener() {
+    if (this.contextApplication != null) {
+      this.contextApplication.unregisterReceiver(BTReceiver);
+      this.contextApplication = null;
     }
   }
 
