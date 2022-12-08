@@ -14,11 +14,9 @@ Cordova plugin for switching between speaker and earpiece when playing audio.
 To set the current audio mode, use the `setAudioMode` method:
     //Mode
 	AudioToggle.BLUETOOTH = 'bluetooth';
-	AudioToggle.INCALL = 'incall';
 	AudioToggle.SPEAKER = 'speaker';
 	AudioToggle.EARPIECE = 'earpiece';
-	AudioToggle.NORMAL = 'normal';
-	AudioToggle.RINGTONE = 'ringtone';
+
 	
 	AudioToggle.setAudioMode(mode);
 
@@ -63,7 +61,14 @@ To set the current audio mode, use the `setAudioMode` method:
     AudioToggle.setAudioMode(AudioToggle.EARPIECE);
 
 
-    AudioToggle.on('devicechange', ({deviceId, type, name, mode}) => {
-			//mode - "speaker" | "earpiece" | "bluetooth" | "headphones"
+    AudioToggle.on('devicechange', ({devices}) => {
+		
+			let currentModeOn = AudioToggle.getAudioMode();
+
+			devices.forEach((device) => {
+				let { deviceId, type, name, mode } = device;
+			});
+
+			//mode - "speaker" | "bluetooth" | "headphones"
 		});
 

@@ -1,12 +1,11 @@
 	var exec = require('cordova/exec');
 	let classInJava = 'AudioTogglePlugin';
 
-	exports.BLUETOOTH = 'bluetooth';
-	exports.INCALL = 'incall';
+
 	exports.SPEAKER = 'speaker';
 	exports.EARPIECE = 'earpiece';
-	exports.NORMAL = 'normal';
-	exports.RINGTONE = 'ringtone';
+	exports.BLUETOOTH = 'bluetooth';
+	exports.HEADFPHONES = 'headphones';
 
 	exports.setAudioMode = function (mode) {
 		exec(null, null, classInJava, 'setAudioMode', [mode]);
