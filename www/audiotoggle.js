@@ -7,13 +7,15 @@
 	exports.BLUETOOTH = 'bluetooth';
 	exports.HEADFPHONES = 'headphones';
 
+	
+
 	exports.setAudioMode = function (mode) {
 		exec(null, null, classInJava, 'setAudioMode', [mode]);
 	};
 
-	exports.setAudioDevice = function (type) {
-		exec(null, null, classInJava, 'setAudioDevice', [type]);
-	};
+	// exports.setAudioDevice = function (type) {
+	// 	exec(null, null, classInJava, 'setAudioDevice', [type]);
+	// };
 	
 	exports.displayIOSAudioRoutingComponent = function () {
 	  exec(null, null, classInJava, 'displayIOSAudioRoutingComponent');
@@ -55,13 +57,13 @@
 	  exec(callback, null, classInJava, 'getAudioSystem', []);
 	};
 	
-	exports.isBluetoothScoOn = function (callback) {
-		exec(callback, null, classInJava, 'isBluetoothScoOn', []);
-	};
+	// exports.isBluetoothScoOn = function (callback) {
+	// 	exec(callback, null, classInJava, 'isBluetoothScoOn', []);
+	// };
 	
-	exports.isSpeakerphoneOn = function (callback) {
-		exec(callback, null, classInJava, 'isSpeakerphoneOn', []);
-	};
+	// exports.isSpeakerphoneOn = function (callback) {
+	// 	exec(callback, null, classInJava, 'isSpeakerphoneOn', []);
+	// };
 	
 	exports.hasBuiltInEarpiece = function(successCb, errorCb) {
 		exec(successCb, errorCb, classInJava, 'hasBuiltInEarpiece');

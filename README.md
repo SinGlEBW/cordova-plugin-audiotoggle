@@ -12,14 +12,18 @@ Cordova plugin for switching between speaker and earpiece when playing audio.
 ### Usage
 
 To set the current audio mode, use the `setAudioMode` method:
-    //Mode
-	AudioToggle.BLUETOOTH = 'bluetooth';
-	AudioToggle.SPEAKER = 'speaker';
-	AudioToggle.EARPIECE = 'earpiece';
+#### Mode
+		/*Android and iOS*/
+		AudioToggle.SPEAKER = 'speaker';
+		AudioToggle.EARPIECE = 'earpiece';
+		/*Android*/
+		AudioToggle.BLUETOOTH = 'bluetooth';
+		/* iOS */
+		AudioToggle.NORMAL = 'normal';
+		AudioToggle.RINGTONE = 'ringtone';
+		
 
-	
 	AudioToggle.setAudioMode(mode);
-
 
     /** Android 12 * setAudioDevice
     
@@ -33,36 +37,25 @@ To set the current audio mode, use the `setAudioMode` method:
      * TYPE_WIRED_HEADSET: 3
      * TYPE_TELEPHONY: 18
      */
-
-
-	AudioToggle.setAudioDevice(type);
 	
 	AudioToggle.displayIOSAudioRoutingComponent();
 	AudioToggle.hasAudioRoutingOptions(callback);
 
-	AudioToggle.setBluetoothScoOn(bool);
-	AudioToggle.setSpeakerphoneOn(bool)
 	AudioToggle.getOutputDevices(callback);
 	
-	AudioToggle.on(eventName, callback);
+	AudioToggle.on("devicechange", callback);
 	AudioToggle.getAudioMode(callback);
+	AudioToggle.hasBuiltInEarpiece(callback);
+	AudioToggle.hasBuiltInSpeaker(callback);
 	
-	AudioToggle.getAudioSystem(callback);
-	
-	AudioToggle.isBluetoothScoOn(callback);
-	AudioToggle.isSpeakerphoneOn(callback);
-	AudioToggle.hasBuiltInEarpiecesuccessCb, errorCb)
-	AudioToggle.hasBuiltInSpeakersuccessCb, errorCb);
-
-
-## Example
+#### Example
 
     AudioToggle.setAudioMode(AudioToggle.SPEAKER);
     AudioToggle.setAudioMode(AudioToggle.EARPIECE);
 
 
     AudioToggle.on('devicechange', ({devices}) => {
-		
+
 			let currentModeOn = AudioToggle.getAudioMode();
 
 			devices.forEach((device) => {
