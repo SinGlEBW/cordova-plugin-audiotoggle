@@ -339,33 +339,13 @@ public class AudioTogglePlugin extends CordovaPlugin {
 
   public String getAudioMode() {
     String mode = "speaker";
-    AudioManager am = getAudioManager();
-    int modeType = am.getMode();
-    LOG.i("modeType: ", " ", modeType);
-    if(AudioManager.MODE_NORMAL == modeType){
-      if(checkDeviceConnect("bluetooth")){  mode = "bluetooth"; }
-      if(checkDeviceConnect("headphones")){ mode = "headphones";  }
-    }
+   
+
+    if(checkDeviceConnect("bluetooth")){  mode = "bluetooth"; }
+    if(checkDeviceConnect("headphones")){ mode = "headphones";  }
     if(this.currentMode != mode) { this.currentMode = mode; };
     return mode;
-
-//    String mode = "speaker";
-//    AudioManager am = getAudioManager();
-//
-//    boolean is = am.isWiredHeadsetOn();
-//    boolean isBluetoothConnect = checkDeviceConnect("bluetooth");
-//    boolean isHeadphonesConnect = checkDeviceConnect("headphones");
-//    boolean isSpeakerOn = isSpeakerphoneOn();
-//
-//  //boolean isEarpiece = getCurrentStatusEarpiece();
-//
-//    if(isBluetoothConnect && isBluetoothScoOn()){ mode = "bluetooth"; }
-//    if(isHeadphonesConnect && (!isBluetoothScoOn())){ mode = "headphones"; }
-//
-//  //if(isEarpiece){ mode = "earpiece"; }
-//
-////    if(!this.currentMode.isEmpty()){ this.currentMode = mode; }
-
+    
   }
 
   public JSONObject getOutputDevices() {
@@ -447,7 +427,7 @@ public class AudioTogglePlugin extends CordovaPlugin {
         return;
       } else {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
-          setTimeout(() -> _this.sendResult(getOutputDevices(), true), delayTimeout);
+          _this.sendResult(getOutputDevices(), true);
         }
       }
     }
@@ -580,6 +560,7 @@ public class AudioTogglePlugin extends CordovaPlugin {
   public static void setTimeout(Runnable runnable, int delay) {
     new Thread(() -> {
       try {
+
         Thread.sleep(delay);
         runnable.run();
       } catch (Exception e) {
